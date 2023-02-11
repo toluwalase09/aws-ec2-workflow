@@ -17,3 +17,22 @@ module "ec2" {
     jira_ticket = "${var.jira_url}${var.ticket_number}"
   }
 }
+
+resource "null_resource" "vm" {
+  connection {
+    host        = module.ec2.instance_ip
+    type        = "ssh"
+    user        = "ubuntu"
+    timeout     = "2m"
+    private_key = file("test.pem")
+  }
+  provisioner "file" {
+    source      = "ansible/"
+    destination = "/home/ubuntu/ansible/"
+  }
+  provisioner "remote-exec" {
+    inline = [
+      "ansible-playbook /home/ubuntu/ansible/playbooks/corporate.yml"
+    ]
+  }
+}
